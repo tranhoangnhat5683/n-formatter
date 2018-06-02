@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-// import FormJson from './form/json';
-// import FormXml from './form/xml';
+import FormJson from './form/json';
+import FormXml from './form/xml';
 import FormPhp from './form/php';
 import FormDefault from './form/default';
 
@@ -13,33 +13,21 @@ export default class Form extends Component {
 
     getForm() {
         switch (this.props.format) {
-            // case 'json':
-            //     return (
-            //         <FormJson
-            //             text={this.props.text}
-            //             fixed={this.props.fixed}
-            //             styles={this.props.styles}
-            //         />
-            //     );
-            // case 'xml':
-            //     return (
-            //         <FormXml
-            //             text={this.props.text}
-            //             fixed={this.props.fixed}
-            //             styles={this.props.styles}
-            //         />
-            //     );
+            case 'json':
+                return (
+                    <FormJson text={this.props.text}/>
+                );
+            case 'xml':
+                return (
+                    <FormXml text={this.props.text}/>
+                );
             case 'php':
                 return (
-                    <FormPhp
-                        text={this.props.text}
-                        fixed={this.props.fixed}
-                        styles={this.props.styles}
-                    />
+                    <FormPhp text={this.props.text}/>
                 );
             default:
                 return (
-                    <FormDefault text={this.props.text} styles={this.props.styles}/>
+                    <FormDefault text={this.props.text}/>
                 );
         }
     }
