@@ -1,29 +1,24 @@
 import React, {Component} from 'react';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
-import {TextField, Checkbox, Button} from 'material-ui';
+import {Button, Select, MenuItem} from 'material-ui';
 import HTMLTree from 'react-htmltree';
-import { pd } from 'pretty-data';
+import {pd} from 'pretty-data';
 import {Controlled as CodeMirror} from 'react-codemirror2';
 import ReactDOM from 'react-dom';
-require('codemirror/mode/xml/xml');
 import '../style.css';
+
+require('codemirror/mode/xml/xml');
 
 export default class Form extends Component {
     constructor(props, context) {
         super(props, context);
         this.state = {
-            highlight: true,
+            format: 'highlight',
         };
     }
 
     getText() {
         return this.props.text;
-    }
-
-    toggle(key) {
-        this.setState({
-            [key]: !this.state[key],
-        });
     }
 
     handleCopy() {
@@ -43,59 +38,20 @@ export default class Form extends Component {
 
     renderViewer() {
         let text = this.getText();
-        if (this.state.filter) {
-            text = this.applyFilter(text, this.state.filter);
-        }
 
-        if (this.state.treeview) {
-            return this.treeviewPrint(text);
-        }
-
-        if (this.state.highlight) {
-            return this.highlightPrint(text);
-        }
-
-        return this.defaultPrint(text);
-    }
-
-    applyFilter(text, filterText) {
-        let obj = this.parseJSON(text);
-        this.recursiveFilter(obj, filterText);
-        return JSON.stringify(obj);
-    }
-
-    recursiveFilter(obj, text) {
-        if (Array.isArray(obj)) {
-            let flag = false;
-            for (let i = obj.length - 1; i >= 0; i--) {
-                if (this.recursiveFilter(obj[i], text)) {
-                    flag = true;
-                } else {
-                    obj.splice(i, 1);
-                }
-            }
-            return flag;
-        } else if (typeof obj === 'object') {
-            let flag = false;
-            for (let key in obj) {
-                if (this.recursiveFilter(obj[key], text) || this.recursiveFilter(key, text)) {
-                    flag = true;
-                } else {
-                    delete obj[key];
-                }
-            }
-            return flag;
-        } else {
-            return (obj + '').search(text) !== -1
+        switch (this.state.format) {
+            case 'highlight':
+                return this.highlightPrint(text);
+            case 'tree':
+                return this.treeviewPrint(text);
+            default:
+                return this.defaultPrint(text);
         }
     }
 
     defaultPrint(text) {
         return (
-            <pre
-                className="formatter-pre"
-                dangerouslySetInnerHTML={{__html: this.prettyText(text)}}
-            />
+            <pre dangerouslySetInnerHTML={{__html: this.prettyText(text)}}/>
         );
     }
 
@@ -103,17 +59,17 @@ export default class Form extends Component {
         return (
             <CodeMirror
                 value={this.prettyText(text)}
-                options={{ mode: 'xml', lineNumbers: true }}
+                options={{mode: 'xml', lineNumbers: true}}
             />
         );
     }
 
     treeviewPrint(text) {
         let defaultExpandedTags = [];
-        defaultExpandedTags.indexOf = function() {
+        defaultExpandedTags.indexOf = function () {
             return 0;
         };
-        return <HTMLTree source={text} defaultExpandedTags={defaultExpandedTags} />;
+        return <HTMLTree source={text} defaultExpandedTags={defaultExpandedTags}/>;
     }
 
     prettyText(text) {
@@ -124,14 +80,6 @@ export default class Form extends Component {
         return pd.xml(text);
     }
 
-    parseJSON(text) {
-        try {
-            return JSON.parse(text);
-        } catch (e) {
-            return '';
-        }
-    }
-
     render() {
         return (
             <div>
@@ -139,30 +87,20 @@ export default class Form extends Component {
                     <tbody>
                     <tr>
                         <td>
-                            <TextField
-                                value={this.state.filter}
-                                placeholder={'Filter by key'}
-                                onChange={e => this.handleChange(e, 'filter')}
-                            />
-                        </td>
-                        <td>
-                            <Checkbox
-                                checked={this.state.highlight}
-                                onChange={() => this.toggle('highlight')}
-                            />
-                            Highlight
-                        </td>
-                        <td>
-                            <Checkbox
-                                checked={this.state.treeview}
-                                onChange={() => this.toggle('treeview')}
-                            />
-                            Tree
+                            <Select
+                                value={this.state.format}
+                                onChange={(e) => this.handleChange(e, 'format')}
+                            >
+                                <MenuItem value={'none'}>None</MenuItem>
+                                <MenuItem value={'highlight'}>Highlight</MenuItem>
+                                <MenuItem value={'tree'}>Tree</MenuItem>
+                            </Select>
                         </td>
                         <td>
                             <CopyToClipboard
                                 text={this.props.text}
-                                onCopy={() => this.handleCopy()}>
+                                onCopy={() => this.handleCopy()}
+                            >
                                 <Button
                                     variant="raised"
                                     color="primary">

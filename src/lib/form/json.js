@@ -1,28 +1,23 @@
 import React, {Component} from 'react';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
-import {TextField, Checkbox, Button} from 'material-ui';
+import {TextField, Button, Select, MenuItem} from 'material-ui';
 import JsonViewer from 'react-json-view';
 import {Controlled as CodeMirror} from 'react-codemirror2';
 import ReactDOM from 'react-dom';
-require('codemirror/mode/javascript/javascript');
 import '../style.css';
+
+require('codemirror/mode/javascript/javascript');
 
 export default class Form extends Component {
     constructor(props, context) {
         super(props, context);
         this.state = {
-            highlight: true,
+            format: 'highlight',
         };
     }
 
     getText() {
         return this.props.text;
-    }
-
-    toggle(key) {
-        this.setState({
-            [key]: !this.state[key],
-        });
     }
 
     handleCopy() {
@@ -46,15 +41,14 @@ export default class Form extends Component {
             text = this.applyFilter(text, this.state.filter);
         }
 
-        if (this.state.treeview) {
-            return this.treeviewPrint(text);
+        switch (this.state.format) {
+            case 'highlight':
+                return this.highlightPrint(text);
+            case 'tree':
+                return this.treeviewPrint(text);
+            default:
+                return this.defaultPrint(text);
         }
-
-        if (this.state.highlight) {
-            return this.highlightPrint(text);
-        }
-
-        return this.defaultPrint(text);
     }
 
     applyFilter(text, filterText) {
@@ -91,10 +85,7 @@ export default class Form extends Component {
 
     defaultPrint(text) {
         return (
-            <pre
-                className="formatter-pre"
-                dangerouslySetInnerHTML={{__html: this.prettyText(text)}}
-            />
+            <pre dangerouslySetInnerHTML={{__html: this.prettyText(text)}}/>
         );
     }
 
@@ -142,23 +133,20 @@ export default class Form extends Component {
                             />
                         </td>
                         <td>
-                            <Checkbox
-                                checked={this.state.highlight}
-                                onChange={() => this.toggle('highlight')}
-                            />
-                            Highlight
-                        </td>
-                        <td>
-                            <Checkbox
-                                checked={this.state.treeview}
-                                onChange={() => this.toggle('treeview')}
-                            />
-                            Tree
+                            <Select
+                                value={this.state.format}
+                                onChange={(e) => this.handleChange(e, 'format')}
+                            >
+                                <MenuItem value={'none'}>None</MenuItem>
+                                <MenuItem value={'highlight'}>Highlight</MenuItem>
+                                <MenuItem value={'tree'}>Tree</MenuItem>
+                            </Select>
                         </td>
                         <td>
                             <CopyToClipboard
                                 text={this.props.text}
-                                onCopy={() => this.handleCopy()}>
+                                onCopy={() => this.handleCopy()}
+                            >
                                 <Button
                                     variant="raised"
                                     color="primary">

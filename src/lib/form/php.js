@@ -1,27 +1,21 @@
 import React, {Component} from 'react';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
-import {Checkbox, Button} from 'material-ui';
+import {Button, Select, MenuItem} from 'material-ui';
 import {Controlled as CodeMirror} from 'react-codemirror2';
 import ReactDOM from 'react-dom';
-require('codemirror/mode/php/php');
 import '../style.css';
+require('codemirror/mode/php/php');
 
 export default class Form extends Component {
     constructor(props, context) {
         super(props, context);
         this.state = {
-            highlight: true,
+            format: 'highlight',
         };
     }
 
     getText() {
         return this.props.text;
-    }
-
-    toggle(key) {
-        this.setState({
-            [key]: !this.state[key],
-        });
     }
 
     handleCopy() {
@@ -33,29 +27,26 @@ export default class Form extends Component {
         }
     }
 
-    renderViewer() {
-        let text = this.getText();
-        if (this.state.filter) {
-            text = this.applyFilter(text, this.state.filter);
-        }
-
-        if (this.state.treeview) {
-            return this.treeviewPrint(text);
-        }
-
-        if (this.state.highlight) {
-            return this.highlightPrint(text);
-        }
-
-        return this.defaultPrint(text);
+    handleChange(e, key) {
+        this.setState({
+            [key]: e.target.value,
+        });
     }
 
-    applyFilter(text, filterText) {
+    renderViewer() {
+        let text = this.getText();
+
+        switch (this.state.format) {
+            case 'highlight':
+                return this.highlightPrint(text);
+            default:
+                return this.defaultPrint(text);
+        }
     }
 
     defaultPrint(text) {
         return (
-            <pre className="formatter-pre" dangerouslySetInnerHTML={{__html: text}}/>
+            <pre dangerouslySetInnerHTML={{__html: text}}/>
         );
     }
 
@@ -63,12 +54,9 @@ export default class Form extends Component {
         return (
             <CodeMirror
                 value={text}
-                options={{mode: 'php', lineNumbers: true}}
+                options={{mode: 'text/x-php', lineNumbers: true}}
             />
         );
-    }
-
-    treeviewPrint(text) {
     }
 
     render() {
@@ -78,10 +66,13 @@ export default class Form extends Component {
                     <tbody>
                     <tr>
                         <td>
-                            <Checkbox
-                                checked={this.state.highlight}
-                                onChange={() => this.toggle('highlight')}/>
-                            Highlight
+                            <Select
+                                value={this.state.format}
+                                onChange={(e) => this.handleChange(e, 'format')}
+                            >
+                                <MenuItem value={'none'}>None</MenuItem>
+                                <MenuItem value={'highlight'}>Highlight</MenuItem>
+                            </Select>
                         </td>
                         <td>
                             <CopyToClipboard

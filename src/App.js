@@ -11,7 +11,7 @@ class App extends Component {
                 <div className="container">
                     <div className="row">
                         <div className="col-6">
-                            <Form format="php" text={"random text"}/>
+                            <Form format="default" text={"random text"}/>
                         </div>
                         <div className="col-6">
                             <Form format="php" text={"$x = 5 + 5; echo $x;"}/>
